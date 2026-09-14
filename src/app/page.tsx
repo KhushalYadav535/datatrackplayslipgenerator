@@ -17,9 +17,11 @@ import {
   CheckCircle2,
   ShieldCheck,
   Layers,
+  FileSpreadsheet,
 } from "lucide-react";
 import PayslipForm from "@/components/PayslipForm";
 import PayslipPreview from "@/components/PayslipPreview";
+import BulkPayrollModal from "@/components/BulkPayrollModal";
 import {
   PayslipData,
   emptyPayslip,
@@ -37,6 +39,7 @@ export default function Home() {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [fullScreenModal, setFullScreenModal] = useState<boolean>(false);
   const [presetMenuOpen, setPresetMenuOpen] = useState<boolean>(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState<boolean>(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const modalPreviewRef = useRef<HTMLDivElement>(null);
 
@@ -197,6 +200,18 @@ export default function Home() {
 
           {/* Right Header Controls */}
           <div className="flex items-center gap-2">
+            {/* Bulk Excel Import Button */}
+            <button
+              type="button"
+              onClick={() => setBulkModalOpen(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition shadow-2xs cursor-pointer"
+              title="Import Excel or CSV sheet to generate all employee payslips at once"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">Bulk Excel Import</span>
+              <span className="sm:hidden">Excel</span>
+            </button>
+
             {/* Template Presets Dropdown */}
             <div className="relative">
               <button
@@ -541,7 +556,14 @@ export default function Home() {
         </div>
       )}
 
-      {/* 5. Minimalist Professional Footer */}
+      {/* 5. Bulk Batch Excel Payroll Modal */}
+      <BulkPayrollModal
+        isOpen={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        baseCompanyData={data}
+      />
+
+      {/* 6. Minimalist Professional Footer */}
       <footer className="mt-auto border-t border-slate-200 bg-white py-3.5 text-xs text-slate-500 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
