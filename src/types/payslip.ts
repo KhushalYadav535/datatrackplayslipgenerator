@@ -154,3 +154,103 @@ export function samplePayslip(): PayslipData {
     showStamp: false,
   };
 }
+
+export function techSoftwareEngineerPayslip(): PayslipData {
+  return {
+    logo: null,
+    companyName: "DATATRACK TECHNOLOGIES INDIA PRIVATE LIMITED",
+    companyAddress: "RMZ Ecospace, Outer Ring Road, Bellandur",
+    cityPincode: "Bengaluru-560103",
+    country: "India",
+    cinNumber: "U72900KA2018PTC112345",
+    gstin: "29AABCD1234E1Z5",
+
+    employeeName: "Aditya R. Sharma",
+    employeeId: "DT-8842",
+    designation: "Senior Software Engineer - Full Stack",
+    department: "Cloud Platform Engineering",
+    dateOfJoining: "2022-03-15",
+    location: "Bengaluru",
+
+    panNumber: "ABCDE1234F",
+    uanNumber: "101234567890",
+    esicNumber: "-",
+    insuranceCardNo: "HLTH-DT-8842",
+    pfNumber: "KN/BNG/0012345/000/0008842",
+    bankAccount: "50100429184021",
+    bankName: "HDFC Bank Ltd",
+    paymentMode: "Bank Transfer",
+
+    payPeriodMonth: "SEP",
+    payPeriodYear: "2026",
+    totalDays: "30",
+    paidDays: "30",
+    lopDays: "0",
+    payDate: "2026-09-30",
+
+    earnings: [
+      { id: makeId(), label: "BASIC", rate: 55000, amount: 55000 },
+      { id: makeId(), label: "HRA", rate: 27500, amount: 27500 },
+      { id: makeId(), label: "SPECIAL ALLOWANCE", rate: 22500, amount: 22500 },
+      { id: makeId(), label: "CONVEYANCE ALLOWANCE", rate: 5000, amount: 5000 },
+    ],
+    deductions: [
+      { id: makeId(), label: "PF EMPLOYEE CONTRIB", amount: 6600 },
+      { id: makeId(), label: "PROFESSIONAL TAX", amount: 200 },
+      { id: makeId(), label: "TDS / INCOME TAX", amount: 4500 },
+    ],
+
+    remarks: "This is a computer generated statement, as such no signature required.",
+    showStamp: true,
+  };
+}
+
+export function corporateExecutivePayslip(): PayslipData {
+  return {
+    logo: null,
+    companyName: "DATATRACK GLOBAL CONSULTING PRIVATE LIMITED",
+    companyAddress: "Level 12, Tower B, Cyber City, DLF Phase 2",
+    cityPincode: "Gurugram-122002",
+    country: "India",
+    cinNumber: "U74140HR2015PTC054321",
+    gstin: "06AABCG9876H1Z2",
+
+    employeeName: "Priya V. Nair",
+    employeeId: "EXEC-104",
+    designation: "Director - Business Operations",
+    department: "Strategic Enterprise Growth",
+    dateOfJoining: "2019-11-01",
+    location: "Gurugram",
+
+    panNumber: "VWXYZ9876G",
+    uanNumber: "100987654321",
+    esicNumber: "-",
+    insuranceCardNo: "EXEC-MED-104",
+    pfNumber: "GN/GGN/0054321/000/0000104",
+    bankAccount: "001205009812",
+    bankName: "ICICI Bank Ltd",
+    paymentMode: "NEFT / RTGS",
+
+    payPeriodMonth: "AUG",
+    payPeriodYear: "2026",
+    totalDays: "31",
+    paidDays: "31",
+    lopDays: "0",
+    payDate: "2026-08-31",
+
+    earnings: [
+      { id: makeId(), label: "BASIC", rate: 110000, amount: 110000 },
+      { id: makeId(), label: "HRA", rate: 55000, amount: 55000 },
+      { id: makeId(), label: "EXECUTIVE ALLOWANCE", rate: 45000, amount: 45000 },
+      { id: makeId(), label: "PERFORMANCE BONUS", rate: 20000, amount: 20000 },
+    ],
+    deductions: [
+      { id: makeId(), label: "PROVIDENT FUND", amount: 13200 },
+      { id: makeId(), label: "PROFESSIONAL TAX", amount: 200 },
+      { id: makeId(), label: "TDS / TAX DEDUCTION", amount: 21500 },
+    ],
+
+    remarks: "This is a computer generated statement, as such no signature required.",
+    showStamp: true,
+  };
+}

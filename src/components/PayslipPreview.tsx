@@ -61,9 +61,13 @@ const PayslipPreview = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
               className="max-h-12 max-w-full object-contain"
             />
           ) : (
-            <div className="flex items-center gap-1.5 text-teal-600 font-extrabold text-base tracking-tight">
-              <Building2 className="w-5 h-5 text-teal-600" />
-              <span>{data.companyName ? data.companyName.split(" ")[0] : "DATATRACK"}</span>
+            <div className="flex items-center gap-1.5 text-slate-950 font-bold text-sm tracking-tight">
+              <div className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center font-extrabold text-[11px] shrink-0">
+                {data.companyName ? data.companyName.charAt(0) : "D"}
+              </div>
+              <span className="truncate max-w-[90px] uppercase font-extrabold text-xs">
+                {data.companyName ? data.companyName.split(" ")[0] : "DATATRACK"}
+              </span>
             </div>
           )}
         </div>
