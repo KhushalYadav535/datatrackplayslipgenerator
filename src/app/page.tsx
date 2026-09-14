@@ -222,7 +222,7 @@ export default function Home() {
                     <div>
                       <div className="font-semibold text-xs">iEnergizer / BPO Ops</div>
                       <div className="text-[10px] text-slate-400">
-                        Khushal Yadav • Noida
+                        Aarav Verma • Noida
                       </div>
                     </div>
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />

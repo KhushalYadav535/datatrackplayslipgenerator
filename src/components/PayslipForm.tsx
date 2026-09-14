@@ -333,7 +333,7 @@ export default function PayslipForm({ data, onChange }: Props) {
                 label="Employee Code"
                 value={data.employeeId}
                 onChange={(v) => set("employeeId", v)}
-                placeholder="e.g. T276912"
+                placeholder="e.g. IE-40918"
                 required
                 icon={FileText}
                 monospace
@@ -342,7 +342,7 @@ export default function PayslipForm({ data, onChange }: Props) {
                 label="Employee Name"
                 value={data.employeeName}
                 onChange={(v) => set("employeeName", v)}
-                placeholder="e.g. Khushal Yadav"
+                placeholder="e.g. Aarav N. Verma"
                 required
                 icon={User}
               />
@@ -356,7 +356,7 @@ export default function PayslipForm({ data, onChange }: Props) {
                 label="Department / Client Unit"
                 value={data.department}
                 onChange={(v) => set("department", v)}
-                placeholder="e.g. Rapido / Operations"
+                placeholder="e.g. Operations / Customer Support"
                 icon={Briefcase}
               />
               <div className="space-y-1">
@@ -711,27 +711,27 @@ export default function PayslipForm({ data, onChange }: Props) {
                 label="UAN Number"
                 value={data.uanNumber}
                 onChange={(v) => set("uanNumber", v)}
-                placeholder="e.g. 102114127134"
+                placeholder="e.g. 101982736451"
                 monospace
               />
               <FormInput
                 label="ESIC Number"
                 value={data.esicNumber}
                 onChange={(v) => set("esicNumber", v)}
-                placeholder="e.g. 6723755843"
+                placeholder="e.g. 6710293847"
                 monospace
               />
               <FormInput
                 label="Bank Name"
                 value={data.bankName}
                 onChange={(v) => set("bankName", v)}
-                placeholder="e.g. Kotak Bank"
+                placeholder="e.g. Kotak Mahindra Bank"
               />
               <FormInput
                 label="Bank Account Number"
                 value={data.bankAccount}
                 onChange={(v) => set("bankAccount", v)}
-                placeholder="e.g. 247529081"
+                placeholder="e.g. 918273645012"
                 monospace
               />
               <FormInput

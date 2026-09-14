@@ -182,7 +182,7 @@ const PayslipPreview = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         </div>
       </div>
 
-      {/* 4. Working Days & Paid Days Strip (Solid Black Lines matching T276912_10_2024.PDF) */}
+      {/* 4. Working Days & Paid Days Strip (Solid Black Lines matching Corporate Standard) */}
       <div className="mt-1.5 border-t border-b border-black py-1 px-1 flex justify-between items-center text-xs font-bold text-black">
         <div>Working Days:{data.totalDays || "31"}</div>
         <div>Paid Days:{data.paidDays || "30"}</div>
@@ -253,7 +253,7 @@ const PayslipPreview = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
         </div>
       </div>
 
-      {/* 6. Net Salary & In-Words Bar (Authentic Blue Text matching T276912_10_2024.PDF) */}
+      {/* 6. Net Salary & In-Words Bar (Authentic Blue Text matching Corporate Standard) */}
       <div className="mt-2.5 text-xs font-bold text-[#1d4ed8] flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <div>Net Salary:Rs. {netPay}</div>
         <div>In Words:{amountInWords(netPay)}</div>
