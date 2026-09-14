@@ -11,22 +11,21 @@ export async function downloadPayslipPdf(
   options: GeneratePdfOptions = {}
 ): Promise<void> {
   const {
-    filename = "DataTrack_Payslip.pdf",
+    filename = "Payslip.pdf",
     onProgress,
   } = options;
 
   try {
-    onProgress?.("Authenticating document fonts & layout...");
+    onProgress?.("Settling typography and layout...");
 
-    // Ensure all web and system fonts are completely settled
     if (typeof document !== "undefined" && document.fonts) {
       await document.fonts.ready;
     }
     await new Promise((resolve) => setTimeout(resolve, 150));
 
-    onProgress?.("Rendering 300DPI corporate document graphics...");
+    onProgress?.("Rendering 300DPI document image...");
 
-    // Capture using html-to-image with pixelRatio 3 for razor-sharp vector-like clarity
+    // High quality rasterization
     const imgData = await toPng(element, {
       quality: 1,
       pixelRatio: 3,
@@ -36,10 +35,12 @@ export async function downloadPayslipPdf(
         backgroundColor: "#ffffff",
         margin: "0",
         boxShadow: "none",
+        width: "100%",
+        maxWidth: "800px",
       },
     });
 
-    onProgress?.("Composing official A4 PDF...");
+    onProgress?.("Fitting single A4 page...");
 
     const pdf = new jsPDF({
       orientation: "portrait",
@@ -48,65 +49,45 @@ export async function downloadPayslipPdf(
       compress: true,
     });
 
-    const pageWidth = pdf.internal.pageSize.getWidth(); // 210mm
-    const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+    const pageWidth = pdf.internal.pageSize.getWidth(); // 210 mm
+    const pageHeight = pdf.internal.pageSize.getHeight(); // 297 mm
 
     const imgProps = pdf.getImageProperties(imgData);
     const contentAspectRatio = imgProps.height / imgProps.width;
 
-    // Standard 8mm margins for authentic corporate edge-to-edge balance
+    // Standard 8mm margins
     const marginX = 8;
     const marginY = 8;
-    const printableWidth = pageWidth - marginX * 2;
-    const renderedHeight = printableWidth * contentAspectRatio;
+    const availWidth = pageWidth - marginX * 2; // 194 mm
+    const availHeight = pageHeight - marginY * 2; // 281 mm
 
-    if (renderedHeight <= pageHeight - marginY * 2) {
-      // Fits on a single A4 page cleanly
-      pdf.addImage(
-        imgData,
-        "PNG",
-        marginX,
-        marginY,
-        printableWidth,
-        renderedHeight,
-        undefined,
-        "FAST"
-      );
-    } else {
-      // Handles multipage if user has many allowance line items
-      let heightLeft = renderedHeight;
-      let position = marginY;
+    let finalWidth = availWidth;
+    let finalHeight = availWidth * contentAspectRatio;
 
-      pdf.addImage(
-        imgData,
-        "PNG",
-        marginX,
-        position,
-        printableWidth,
-        renderedHeight,
-        undefined,
-        "FAST"
-      );
-      heightLeft -= (pageHeight - marginY * 2);
-
-      while (heightLeft > 0) {
-        position = position - (pageHeight - marginY * 2);
-        pdf.addPage();
-        pdf.addImage(
-          imgData,
-          "PNG",
-          marginX,
-          position,
-          printableWidth,
-          renderedHeight,
-          undefined,
-          "FAST"
-        );
-        heightLeft -= (pageHeight - marginY * 2);
-      }
+    // Strict single-page fitting: scale proportionally if height exceeds available printable height
+    if (finalHeight > availHeight) {
+      const scale = availHeight / finalHeight;
+      finalHeight = availHeight;
+      finalWidth = finalWidth * scale;
     }
 
-    onProgress?.("Finalizing download...");
+    // Horizontally center if scaled down
+    const posX = marginX + (availWidth - finalWidth) / 2;
+    const posY = marginY;
+
+    // Add exactly ONCE on page 1 - strictly 1 page
+    pdf.addImage(
+      imgData,
+      "PNG",
+      posX,
+      posY,
+      finalWidth,
+      finalHeight,
+      undefined,
+      "FAST"
+    );
+
+    onProgress?.("Saving PDF document...");
     pdf.save(filename);
   } catch (error) {
     console.error("PDF generation failed:", error);

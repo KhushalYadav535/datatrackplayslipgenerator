@@ -45,13 +45,13 @@ function integerToWords(num: number): string {
   return parts.join(" ");
 }
 
-/** Formats a rupee amount (with optional paise) as words, Indian-style, e.g. "Indian Rupee Thirty-Three Thousand Only". */
+/** Formats a rupee amount as words, e.g. "Rs. Ten Thousand Four Hundred Forty Three Only". */
 export function amountInWords(amount: number): string {
   const safe = Number.isFinite(amount) ? Math.max(0, amount) : 0;
   const rupees = Math.floor(safe);
   const paise = Math.round((safe - rupees) * 100);
 
-  let words = "Indian Rupee " + integerToWords(rupees);
+  let words = "Rs. " + integerToWords(rupees);
   if (paise > 0) {
     words += " and " + integerToWords(paise) + " Paise";
   }

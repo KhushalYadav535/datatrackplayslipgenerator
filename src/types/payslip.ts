@@ -1,7 +1,8 @@
 export interface LineItem {
   id: string;
   label: string;
-  amount: number;
+  rate?: number; // Optional standard rate
+  amount: number; // Actual payable amount
 }
 
 export interface PayslipData {
@@ -22,27 +23,30 @@ export interface PayslipData {
   
   panNumber: string;
   uanNumber: string;
+  esicNumber: string;
+  insuranceCardNo: string;
   pfNumber: string;
   bankAccount: string;
   bankName: string;
   paymentMode: string;
   
-  payPeriodMonth: string; // e.g. "September"
-  payPeriodYear: string; // e.g. "2026"
-  totalDays: string;
-  paidDays: string;
+  payPeriodMonth: string; // e.g. "OCT" or "October"
+  payPeriodYear: string; // e.g. "2024"
+  totalDays: string; // e.g. "31"
+  paidDays: string; // e.g. "30"
   lopDays: string;
   payDate: string; // yyyy-mm-dd
 
   earnings: LineItem[];
   deductions: LineItem[];
 
+  remarks: string;
   showStamp: boolean;
 }
 
 export const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
 ];
 
 export function currentMonthYear(): { month: string; year: string } {
@@ -70,85 +74,83 @@ export function emptyPayslip(): PayslipData {
     designation: "",
     department: "",
     dateOfJoining: "",
-    location: "India",
+    location: "Noida",
 
-    panNumber: "",
+    panNumber: "-",
     uanNumber: "",
+    esicNumber: "",
+    insuranceCardNo: "-",
     pfNumber: "",
     bankAccount: "",
     bankName: "",
-    paymentMode: "Direct Bank Transfer (NEFT/IMPS)",
+    paymentMode: "Bank Transfer",
 
     payPeriodMonth: month,
     payPeriodYear: year,
-    totalDays: "30",
+    totalDays: "31",
     paidDays: "30",
-    lopDays: "0",
+    lopDays: "1",
     payDate: new Date().toISOString().split("T")[0],
 
     earnings: [
-      { id: makeId(), label: "Basic Salary", amount: 45000 },
-      { id: makeId(), label: "House Rent Allowance (HRA)", amount: 18000 },
-      { id: makeId(), label: "Special Allowance", amount: 12000 },
-      { id: makeId(), label: "Conveyance Allowance", amount: 1600 },
+      { id: makeId(), label: "BASIC", rate: 8600, amount: 8323 },
+      { id: makeId(), label: "HRA", rate: 4614, amount: 4465 },
     ],
     deductions: [
-      { id: makeId(), label: "Provident Fund (Employee EPF)", amount: 1800 },
-      { id: makeId(), label: "Professional Tax (PT)", amount: 200 },
-      { id: makeId(), label: "Income Tax (TDS)", amount: 2500 },
+      { id: makeId(), label: "PF", amount: 999 },
+      { id: makeId(), label: "ESI", amount: 96 },
     ],
 
-    showStamp: true,
+    remarks: "This is a computer generated statement, as such no signature required.",
+    showStamp: false,
   };
 }
 
 export function samplePayslip(): PayslipData {
-  const { month, year } = currentMonthYear();
   return {
     logo: null,
-    companyName: "DATATRACK TECHNOLOGIES PRIVATE LIMITED",
-    companyAddress: "Building 4B, 3rd Floor, Outer Ring Road Tech Zone, Bellandur",
-    cityPincode: "Bengaluru, Karnataka - 560103",
+    companyName: "iENERGIZER IT SERVICES PRIVATE LIMITED",
+    companyAddress: "A-37, Sector-60",
+    cityPincode: "Noida-201301",
     country: "India",
-    cinNumber: "U72200KA2020PTC138942",
-    gstin: "29AABCD1234F1Z8",
+    cinNumber: "U72200DL2000PTC107563",
+    gstin: "07AAACI1234A1Z9",
 
-    employeeName: "Aditya R. Sharma",
-    employeeId: "DT-8429",
-    designation: "Senior Software Engineer",
-    department: "Enterprise Cloud Platforms",
-    dateOfJoining: "2022-07-14",
-    location: "Bengaluru, India",
+    employeeName: "Khushal Yadav",
+    employeeId: "T276912",
+    designation: "Assistant Executive Customer Service",
+    department: "Rapido",
+    dateOfJoining: "2024-08-07",
+    location: "Noida",
 
-    panNumber: "ABCDE1234F",
-    uanNumber: "101234567890",
-    pfNumber: "KN/BNG/0048921/000/0842",
-    bankAccount: "50100492817291",
-    bankName: "HDFC Bank Ltd.",
-    paymentMode: "Direct Bank Transfer (NEFT)",
+    panNumber: "-",
+    uanNumber: "102114127134",
+    esicNumber: "6723755843",
+    insuranceCardNo: "-",
+    pfNumber: "DL/CPM/107563/000/276912",
+    bankAccount: "247529081",
+    bankName: "Kotak Bank",
+    paymentMode: "Bank Transfer",
 
-    payPeriodMonth: month,
-    payPeriodYear: year,
-    totalDays: "30",
+    payPeriodMonth: "OCT",
+    payPeriodYear: "2024",
+    totalDays: "31",
     paidDays: "30",
-    lopDays: "0",
-    payDate: new Date().toISOString().split("T")[0],
+    lopDays: "1",
+    payDate: "2024-11-01",
 
     earnings: [
-      { id: makeId(), label: "Basic Salary", amount: 48000 },
-      { id: makeId(), label: "House Rent Allowance (HRA)", amount: 19200 },
-      { id: makeId(), label: "Special Allowance", amount: 12500 },
-      { id: makeId(), label: "Conveyance Allowance", amount: 2400 },
-      { id: makeId(), label: "Medical Allowance", amount: 1250 },
-      { id: makeId(), label: "Performance Incentive", amount: 6500 },
+      { id: makeId(), label: "BASIC", rate: 8600, amount: 8323 },
+      { id: makeId(), label: "HRA", rate: 4614, amount: 4465 },
     ],
     deductions: [
-      { id: makeId(), label: "Employee Provident Fund (EPF)", amount: 3600 },
-      { id: makeId(), label: "Professional Tax (PT)", amount: 200 },
-      { id: makeId(), label: "Tax Deducted at Source (TDS)", amount: 4800 },
-      { id: makeId(), label: "Group Health Insurance", amount: 750 },
+      { id: makeId(), label: "HEADSET", amount: 1000 },
+      { id: makeId(), label: "FINE", amount: 250 },
+      { id: makeId(), label: "PF", amount: 999 },
+      { id: makeId(), label: "ESI", amount: 96 },
     ],
 
-    showStamp: true,
+    remarks: "This is a computer generated statement, as such no signature required.",
+    showStamp: false,
   };
 }

@@ -7,394 +7,273 @@ interface Props {
   data: PayslipData;
 }
 
-function formatCurrency(amount: number): string {
-  const safe = Number.isFinite(amount) ? amount : 0;
-  return `₹ ${safe.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 function formatDate(iso: string): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso + "T00:00:00");
   if (isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
 const PayslipPreview = forwardRef<HTMLDivElement, Props>(({ data }, ref) => {
-  const grossEarnings = (data.earnings || []).reduce(
+  const grossPayable = (data.earnings || []).reduce(
     (s, i) => s + (Number(i.amount) || 0),
+    0
+  );
+  const totalRate = (data.earnings || []).reduce(
+    (s, i) => s + (Number(i.rate ?? i.amount) || 0),
     0
   );
   const totalDeductions = (data.deductions || []).reduce(
     (s, i) => s + (Number(i.amount) || 0),
     0
   );
-  const netPay = Math.max(0, grossEarnings - totalDeductions);
+  const netPay = Math.max(0, grossPayable - totalDeductions);
 
-  // Pad items so Earnings & Deductions columns are balanced and look like a real corporate sheet
-  const maxRows = Math.max(
-    (data.earnings || []).length,
-    (data.deductions || []).length,
-    5
-  );
-  const earningsList = [...(data.earnings || [])];
-  const deductionsList = [...(data.deductions || [])];
+  const earningsList = data.earnings || [];
+  const deductionsList = data.deductions || [];
 
   return (
     <div
       ref={ref}
       id="payslip-print-target"
-      className="bg-white text-slate-900 mx-auto select-none font-sans"
+      className="bg-white text-black mx-auto select-none font-sans"
       style={{
         width: "100%",
-        maxWidth: "794px", // Standard A4 width ratio
+        maxWidth: "794px",
         backgroundColor: "#ffffff",
-        color: "#0f172a",
-        padding: "32px 36px",
+        color: "#000000",
+        padding: "24px 32px",
         boxSizing: "border-box",
+        fontFamily: "Arial, Helvetica, sans-serif",
       }}
     >
-      {/* 1. Header: Authentic Corporate Letterhead */}
-      <div className="pb-4 border-b-2 border-slate-800">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            {data.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={data.logo}
-                alt="Company Logo"
-                className="w-16 h-16 object-contain shrink-0 border border-slate-200 p-1"
-              />
-            ) : (
-              <div className="w-14 h-14 bg-slate-900 text-white flex items-center justify-center font-bold text-xl shrink-0 rounded-none border border-slate-900">
-                {data.companyName ? data.companyName.charAt(0).toUpperCase() : <Building2 className="w-6 h-6" />}
-              </div>
-            )}
-            <div>
-              <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-950 uppercase font-serif">
-                {data.companyName || "DATATRACK TECHNOLOGIES PRIVATE LIMITED"}
-              </h1>
-              <p className="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                {[data.companyAddress, data.cityPincode, data.country]
-                  .filter(Boolean)
-                  .join(", ") || "Corporate Tech Park, Outer Ring Road, Bengaluru - 560103, India"}
-              </p>
-              {(data.cinNumber || data.gstin) && (
-                <p className="text-[10px] text-slate-500 mt-1 font-mono tracking-wide">
-                  {data.cinNumber && <span>CIN: {data.cinNumber}</span>}
-                  {data.cinNumber && data.gstin && <span> | </span>}
-                  {data.gstin && <span>GSTIN: {data.gstin}</span>}
-                </p>
-              )}
+      {/* 1. Header: Logo & Company Name */}
+      <div className="flex items-center justify-between pb-2.5">
+        <div className="w-28 shrink-0">
+          {data.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={data.logo}
+              alt="Company Logo"
+              className="max-h-12 max-w-full object-contain"
+            />
+          ) : (
+            <div className="flex items-center gap-1.5 text-teal-600 font-extrabold text-base tracking-tight">
+              <Building2 className="w-5 h-5 text-teal-600" />
+              <span>{data.companyName ? data.companyName.split(" ")[0] : "DATATRACK"}</span>
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="text-right shrink-0 border-l border-slate-300 pl-4">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
-              FORM 12-B / HR-DOC
-            </span>
-            <span className="text-xs font-mono text-slate-700 block mt-0.5">
-              Ref: DT/PAY/{data.payPeriodYear}/{data.employeeId || "001"}
-            </span>
-            <span className="text-[10px] text-slate-500 block mt-1">
-              Pay Date: <strong className="text-slate-800">{formatDate(data.payDate)}</strong>
-            </span>
-          </div>
+        <div className="flex-1 text-center pr-12">
+          <h1 className="text-sm sm:text-base font-bold text-black uppercase tracking-tight">
+            {data.companyName || "iENERGIZER IT SERVICES PRIVATE LIMITED"}
+          </h1>
+          <p className="text-[11px] text-gray-700 mt-0.5">
+            {[data.companyAddress, data.cityPincode].filter(Boolean).join(", ") ||
+              "A-37, Sector-60, Noida-201301"}
+          </p>
         </div>
       </div>
 
       {/* 2. Payslip Month Title Bar */}
-      <div className="bg-slate-100 border-x border-b border-slate-300 py-1.5 px-4 my-0 text-center">
-        <h2 className="text-xs sm:text-sm font-bold tracking-widest text-slate-900 uppercase">
-          PAYSLIP FOR THE MONTH OF {data.payPeriodMonth} {data.payPeriodYear}
-        </h2>
+      <div className="bg-[#4b5563] text-white font-bold text-center py-1 text-xs tracking-wider uppercase border border-gray-600">
+        Payslip For {data.payPeriodMonth} {data.payPeriodYear}
       </div>
 
-      {/* 3. Employee Master & Statutory Details Table (Authentic 4-column Grid) */}
-      <div className="mt-3 border border-slate-300 text-xs">
-        <table className="w-full border-collapse">
-          <tbody>
-            <tr className="border-b border-slate-200">
-              <td className="w-1/4 py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Employee Code
-              </td>
-              <td className="w-1/4 py-1.5 px-3 font-mono font-bold text-slate-900 border-r border-slate-300">
-                {data.employeeId || "DT-8429"}
-              </td>
-              <td className="w-1/4 py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Employee Name
-              </td>
-              <td className="w-1/4 py-1.5 px-3 font-bold text-slate-900 uppercase">
-                {data.employeeName || "ADITYA R. SHARMA"}
-              </td>
-            </tr>
-
-            <tr className="border-b border-slate-200">
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Designation
-              </td>
-              <td className="py-1.5 px-3 text-slate-800 border-r border-slate-300">
-                {data.designation || "Senior Software Engineer"}
-              </td>
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Department
-              </td>
-              <td className="py-1.5 px-3 text-slate-800">
-                {data.department || "Enterprise Cloud Platforms"}
-              </td>
-            </tr>
-
-            <tr className="border-b border-slate-200">
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Date of Joining
-              </td>
-              <td className="py-1.5 px-3 text-slate-800 border-r border-slate-300 font-mono">
-                {formatDate(data.dateOfJoining)}
-              </td>
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Location / Branch
-              </td>
-              <td className="py-1.5 px-3 text-slate-800">
-                {data.location || "Bengaluru, India"}
-              </td>
-            </tr>
-
-            <tr className="border-b border-slate-200">
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Bank Name
-              </td>
-              <td className="py-1.5 px-3 text-slate-800 border-r border-slate-300">
-                {data.bankName || "HDFC Bank Ltd."}
-              </td>
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Bank A/C Number
-              </td>
-              <td className="py-1.5 px-3 font-mono font-medium text-slate-900">
-                {data.bankAccount || "••••••••4892"}
-              </td>
-            </tr>
-
-            <tr className="border-b border-slate-200">
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                PAN Number
-              </td>
-              <td className="py-1.5 px-3 font-mono font-semibold text-slate-900 uppercase border-r border-slate-300">
-                {data.panNumber || "ABCDE1234F"}
-              </td>
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                Payment Mode
-              </td>
-              <td className="py-1.5 px-3 text-slate-800">
-                {data.paymentMode || "Direct Bank Transfer (NEFT)"}
-              </td>
-            </tr>
-
-            <tr>
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                UAN (Universal A/C)
-              </td>
-              <td className="py-1.5 px-3 font-mono text-slate-800 border-r border-slate-300">
-                {data.uanNumber || "101234567890"}
-              </td>
-              <td className="py-1.5 px-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-300">
-                PF Account Number
-              </td>
-              <td className="py-1.5 px-3 font-mono text-slate-800">
-                {data.pfNumber || "KN/BNG/0048921/000/0842"}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* 4. Attendance Summary Strip */}
-      <div className="mt-2 border border-slate-300 bg-slate-50/80 text-xs">
-        <div className="grid grid-cols-3 divide-x divide-slate-300 text-center py-1.5">
-          <div>
-            <span className="text-slate-500 font-medium">Calendar Days: </span>
-            <span className="font-bold text-slate-900 font-mono">{data.totalDays || "30"}</span>
-          </div>
-          <div>
-            <span className="text-slate-500 font-medium">Days Worked / Paid: </span>
-            <span className="font-bold text-slate-900 font-mono">{data.paidDays || "30"}</span>
-          </div>
-          <div>
-            <span className="text-slate-500 font-medium">Loss of Pay (LOP): </span>
-            <span className="font-bold text-slate-900 font-mono">{data.lopDays || "0"}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. Salary Ledger: Earnings vs Deductions Table */}
-      <div className="mt-3 border border-slate-300">
-        <table className="w-full border-collapse text-xs">
-          <thead>
-            <tr className="bg-slate-200/90 text-slate-900 border-b border-slate-300 font-bold uppercase tracking-wider text-[11px]">
-              <th className="py-2 px-3 text-left w-[35%] border-r border-slate-300">
-                Earnings
-              </th>
-              <th className="py-2 px-3 text-right w-[15%] border-r border-slate-300">
-                Amount (₹)
-              </th>
-              <th className="py-2 px-3 text-left w-[35%] border-r border-slate-300">
-                Deductions
-              </th>
-              <th className="py-2 px-3 text-right w-[15%]">
-                Amount (₹)
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: maxRows }).map((_, idx) => {
-              const earn = earningsList[idx];
-              const ded = deductionsList[idx];
-              return (
-                <tr
-                  key={idx}
-                  className={`border-b border-slate-200 ${
-                    idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"
-                  }`}
-                >
-                  {/* Earnings Item */}
-                  <td className="py-1.5 px-3 text-slate-800 border-r border-slate-300">
-                    {earn ? earn.label : ""}
-                  </td>
-                  <td className="py-1.5 px-3 text-right font-mono text-slate-900 border-r border-slate-300">
-                    {earn ? Number(earn.amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 }) : ""}
-                  </td>
-
-                  {/* Deductions Item */}
-                  <td className="py-1.5 px-3 text-slate-800 border-r border-slate-300">
-                    {ded ? ded.label : ""}
-                  </td>
-                  <td className="py-1.5 px-3 text-right font-mono text-slate-900">
-                    {ded ? Number(ded.amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 }) : ""}
-                  </td>
+      {/* 3. Employee Master Information Grid (3 Isolated Columns with Dedicated Colon Cells - ZERO OVERLAP) */}
+      <div className="mt-2 text-[10px] text-black">
+        <div className="grid grid-cols-12 gap-2">
+          {/* Column 1: Code, Name, Joining, Dept, Location (30% width) */}
+          <div className="col-span-4">
+            <table className="w-full border-collapse">
+              <tbody>
+                <tr>
+                  <td className="w-16 font-bold whitespace-nowrap py-0.5">Code</td>
+                  <td className="w-3 text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1 font-medium">{data.employeeId || "-"}</td>
                 </tr>
-              );
-            })}
-
-            {/* Total Subtotal Row */}
-            <tr className="bg-slate-100 font-bold border-t-2 border-slate-400 text-xs text-slate-900">
-              <td className="py-2 px-3 border-r border-slate-300 uppercase">
-                Total Gross Earnings (A)
-              </td>
-              <td className="py-2 px-3 text-right font-mono border-r border-slate-300">
-                {formatCurrency(grossEarnings)}
-              </td>
-              <td className="py-2 px-3 border-r border-slate-300 uppercase">
-                Total Deductions (B)
-              </td>
-              <td className="py-2 px-3 text-right font-mono">
-                {formatCurrency(totalDeductions)}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* 6. Net Salary & Amount in Words Card */}
-      <div className="mt-3 border-2 border-slate-800 bg-slate-50 p-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Take Home Pay (Net Payable)
-            </span>
-            <span className="text-base sm:text-lg font-black font-mono text-slate-950">
-              NET PAY (A - B): {formatCurrency(netPay)}
-            </span>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">Name</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1 font-bold">{data.employeeName || "-"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">Joining</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1">{formatDate(data.dateOfJoining)}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">Dept</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1 leading-tight">{data.department || "-"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">Location</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1">{data.location || "-"}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          <div className="text-right">
-            <span className="text-[10px] text-slate-500 font-medium block">
-              Mode of Disbursement
-            </span>
-            <span className="text-xs font-semibold text-slate-800">
-              {data.paymentMode || "Direct Deposit (NEFT)"}
-            </span>
+          {/* Column 2: Designation, UAN, ESIC, Bank Name (36% width) */}
+          <div className="col-span-4 pl-1">
+            <table className="w-full border-collapse">
+              <tbody>
+                <tr>
+                  <td className="w-20 font-bold whitespace-nowrap py-0.5 align-top">Designation</td>
+                  <td className="w-3 text-center py-0.5 font-bold align-top">:</td>
+                  <td className="py-0.5 pl-1 align-top leading-tight">{data.designation || "-"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">UAN No</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1">{data.uanNumber || "-"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">ESIC No</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1">{data.esicNumber || "-"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">Bank Name</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1 leading-tight">{data.bankName || "-"}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
 
-        <div className="mt-2 pt-2 border-t border-slate-300 text-xs">
-          <span className="text-slate-600 font-semibold">Amount in Words: </span>
-          <span className="font-bold text-slate-900 italic font-serif">
-            {amountInWords(netPay)}
-          </span>
+          {/* Column 3: Insurance Card No, Bank Account No, Salary Status, PAN No (34% width) */}
+          <div className="col-span-4 pl-1">
+            <table className="w-full border-collapse">
+              <tbody>
+                <tr>
+                  <td className="w-28 font-bold whitespace-nowrap py-0.5">Insurance Card No</td>
+                  <td className="w-3 text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1">{data.insuranceCardNo || "-"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">Bank Account No</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1 font-medium whitespace-nowrap">{data.bankAccount || "-"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5 align-top">Salary Status</td>
+                  <td className="text-center py-0.5 font-bold align-top">:</td>
+                  <td className="py-0.5 pl-1 align-top leading-tight">{data.paymentMode || "Bank Transfer"}</td>
+                </tr>
+                <tr>
+                  <td className="font-bold whitespace-nowrap py-0.5">PAN No</td>
+                  <td className="text-center py-0.5 font-bold">:</td>
+                  <td className="py-0.5 pl-1">{data.panNumber || "-"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* 7. Corporate Seal & Signatures Block */}
-      <div className="mt-6 pt-3 grid grid-cols-2 gap-6 items-end relative">
-        {/* Left: Employee Notes & Disclaimer */}
-        <div className="text-[10px] text-slate-500 space-y-1 leading-relaxed">
-          <p className="font-semibold text-slate-700">Important Statutory Notice:</p>
-          <p>
-            1. Income tax computation is based on employee declared tax regimes under Section 115BAC / Old Regime.
-          </p>
-          <p>
-            2. This voucher is an official document of earnings issued for statutory, banking, and tax verification.
-          </p>
-          <p className="pt-2 font-mono text-slate-400">
-            ** This is a system-authenticated digital record generated via DataTrack Payroll Engine. **
-          </p>
+      {/* 4. Working Days & Paid Days Strip (Solid Black Lines matching T276912_10_2024.PDF) */}
+      <div className="mt-1.5 border-t border-b border-black py-1 px-1 flex justify-between items-center text-xs font-bold text-black">
+        <div>Working Days:{data.totalDays || "31"}</div>
+        <div>Paid Days:{data.paidDays || "30"}</div>
+      </div>
+
+      {/* 5. Main Salary Ledger Table Box */}
+      <div className="mt-2 border border-black text-[11px] text-black">
+        {/* Table Headers */}
+        <div className="flex border-b border-black font-bold py-1 bg-white text-[11px]">
+          {/* Earnings side: 56% */}
+          <div className="w-[56%] flex border-r border-black px-2">
+            <span className="w-[50%] text-left">Earnings</span>
+            <span className="w-[25%] text-right pr-2">Rate</span>
+            <span className="w-[25%] text-right">Payable</span>
+          </div>
+          {/* Deductions side: 44% */}
+          <div className="w-[44%] flex px-2">
+            <span className="w-[68%] text-left">Other Deductions</span>
+            <span className="w-[32%] text-right">Amount</span>
+          </div>
         </div>
 
-        {/* Right: Official Corporate Seal & Employer Authorization */}
-        <div className="flex flex-col items-end relative">
-          {/* Realistic Circular Corporate Seal / Stamp */}
-          {data.showStamp && (
-            <div
-              className="absolute -top-12 right-20 pointer-events-none select-none opacity-85"
-              style={{ transform: "rotate(-8deg)" }}
-            >
-              <div className="w-24 h-24 rounded-full border-2 border-double border-indigo-800 p-1 flex flex-col items-center justify-center text-center shadow-xs bg-indigo-50/20 backdrop-blur-[0.5px]">
-                <div className="w-full h-full rounded-full border border-indigo-700 flex flex-col items-center justify-center p-1">
-                  <span className="text-[7px] font-black text-indigo-900 uppercase tracking-tighter leading-none">
-                    {data.companyName ? data.companyName.slice(0, 18) : "DATATRACK TECH"}
-                  </span>
-                  <span className="text-[8px] my-0.5 font-black text-indigo-800 tracking-wider">
-                    ★ VERIFIED ★
-                  </span>
-                  <span className="text-[6px] font-bold text-indigo-700 uppercase tracking-tighter leading-none">
-                    PAYROLL DIVISION
-                  </span>
-                  <span className="text-[6px] font-mono text-indigo-900 mt-0.5">
-                    {data.payPeriodMonth.slice(0, 3).toUpperCase()} {data.payPeriodYear}
-                  </span>
-                </div>
+        {/* Content Box Area */}
+        <div className="min-h-[220px] flex">
+          {/* Left Side: Earnings Items */}
+          <div className="w-[56%] border-r border-black p-2 space-y-1.5">
+            {earningsList.map((item) => (
+              <div key={item.id} className="flex text-[11px] leading-tight">
+                <span className="w-[50%] font-semibold uppercase pr-1">
+                  {item.label}
+                </span>
+                <span className="w-[25%] text-right pr-2 text-black font-normal">
+                  {item.rate !== undefined ? item.rate : item.amount}
+                </span>
+                <span className="w-[25%] text-right text-black font-medium">
+                  {item.amount}
+                </span>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
 
-          <div className="text-right w-56 pt-6">
-            <p className="text-[11px] font-bold text-slate-900 uppercase">
-              For {data.companyName || "DATATRACK TECHNOLOGIES PVT. LTD."}
-            </p>
-            <div className="h-10 flex items-end justify-end pb-1">
-              <span className="font-serif italic text-sm text-indigo-900 font-bold">
-                Authorized Signatory
-              </span>
-            </div>
-            <div className="border-b border-slate-500 w-full mb-1" />
-            <p className="text-[10px] text-slate-500 font-medium">
-              Head of Human Resources / Payroll
-            </p>
+          {/* Right Side: Deductions Items */}
+          <div className="w-[44%] p-2 space-y-1.5">
+            {deductionsList.map((item) => (
+              <div key={item.id} className="flex text-[11px] leading-tight">
+                <span className="w-[68%] font-semibold uppercase pr-1">
+                  {item.label}
+                </span>
+                <span className="w-[32%] text-right text-black font-medium">
+                  {item.amount}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Total Summary Row */}
+        <div className="flex border-t border-black font-bold py-1 bg-white text-xs">
+          <div className="w-[56%] flex border-r border-black px-2">
+            <span className="w-[50%] text-left uppercase">TOTAL</span>
+            <span className="w-[25%] text-right pr-2">{totalRate}</span>
+            <span className="w-[25%] text-right">{grossPayable}</span>
+          </div>
+          <div className="w-[44%] flex px-2">
+            <span className="w-[68%]" />
+            <span className="w-[32%] text-right">{totalDeductions}</span>
           </div>
         </div>
       </div>
 
-      {/* 8. Footer Bar */}
-      <div className="mt-6 pt-2 border-t border-slate-300 text-center flex items-center justify-between text-[10px] text-slate-400 font-mono">
-        <span>Powered by DataTrack Enterprise HRMS</span>
-        <span>Page 1 of 1</span>
-        <span>Strictly Private & Confidential</span>
+      {/* 6. Net Salary & In-Words Bar (Authentic Blue Text matching T276912_10_2024.PDF) */}
+      <div className="mt-2.5 text-xs font-bold text-[#1d4ed8] flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <div>Net Salary:Rs. {netPay}</div>
+        <div>In Words:{amountInWords(netPay)}</div>
       </div>
+
+      {/* 7. Remarks Line */}
+      <div className="mt-4 text-[10.5px] text-gray-600">
+        Remarks : {data.remarks || "This is a computer generated statement, as such no signature required."}
+      </div>
+
+      {/* 8. Optional Stamp if user enables it */}
+      {data.showStamp && (
+        <div className="mt-1 flex justify-end">
+          <div className="w-18 h-18 rounded-full border border-dashed border-indigo-800 p-1 flex flex-col items-center justify-center text-center opacity-85 rotate-[-5deg]">
+            <span className="text-[6px] font-bold text-indigo-900 uppercase leading-none">
+              {data.companyName ? data.companyName.slice(0, 16) : "PAYROLL"}
+            </span>
+            <span className="text-[6px] my-0.5 font-black text-indigo-800">★ VERIFIED ★</span>
+            <span className="text-[5px] text-indigo-700 font-mono leading-none">
+              {data.payPeriodMonth} {data.payPeriodYear}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
